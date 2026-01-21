@@ -8,8 +8,7 @@
     <title>Project Detail: XR</title>
     <script src="js/tailwind.min.js"></script>
 
-    <link href="fonts/space-grotesk.css"
-        rel="stylesheet" />
+    <link href="fonts/space-grotesk.css" rel="stylesheet" />
     <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
@@ -26,7 +25,18 @@
                     borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "1rem", "full": "9999px" },
                 },
             },
-        }
+        };
+
+        // Loading Screen Management
+        window.addEventListener('load', () => {
+            const loadingScreen = document.getElementById('loading-screen');
+            if (loadingScreen) {
+                setTimeout(() => {
+                    loadingScreen.classList.add('fade-out');
+                    setTimeout(() => loadingScreen.remove(), 800);
+                }, 1000);
+            }
+        });
     </script>
     <style type="text/tailwindcss">
         html, body {
@@ -52,6 +62,86 @@
         .custom-scrollbar::-webkit-scrollbar-thumb {
             background: #39FF14;
         }
+        /* Loading Screen Styles */
+        #loading-screen {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background-color: #0A0A0A;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.8s;
+        }
+        #loading-screen.fade-out {
+            opacity: 0;
+            visibility: hidden;
+        }
+        .loader-content {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+        }
+        .loader-radar {
+            width: 120px;
+            height: 120px;
+            border: 1px solid rgba(57, 255, 20, 0.2);
+            border-radius: 50%;
+            position: relative;
+            overflow: hidden;
+        }
+        .loader-radar::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 100%;
+            background: conic-gradient(from 0deg, rgba(57, 255, 20, 0.4) 0%, transparent 25%);
+            transform-origin: 0 0;
+            animation: radar-sweep 2s linear infinite;
+        }
+        .loader-radar-grid {
+            position: absolute;
+            inset: 0;
+            background-image: 
+                radial-gradient(rgba(57, 255, 20, 0.1) 1px, transparent 1px),
+                linear-gradient(rgba(57, 255, 20, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(57, 255, 20, 0.05) 1px, transparent 1px);
+            background-size: 20px 20px, 20px 20px, 20px 20px;
+            background-position: center;
+            border-radius: 50%;
+        }
+        @keyframes radar-sweep {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .loader-text {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 10px;
+            font-weight: 900;
+            letter-spacing: 0.5em;
+            text-transform: uppercase;
+            color: #39FF14;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .loader-dots::after {
+            content: '...';
+            animation: dots 1.5s steps(4, end) infinite;
+            display: inline-block;
+            width: 1.5em;
+        }
+        @keyframes dots {
+            0%, 20% { content: ''; }
+            40% { content: '.'; }
+            60% { content: '..'; }
+            80%, 100% { content: '...'; }
+        }
         .glass-panel {
             @apply bg-white/5 border border-white/10 backdrop-blur-md;
         }
@@ -61,7 +151,18 @@
     </style>
 </head>
 
-<body class="bg-background-dark text-white min-h-screen custom-scrollbar">
+<body class="bg-background-dark text-slate-300 min-h-screen custom-scrollbar">
+    <!-- Loading Screen -->
+    <div id="loading-screen">
+        <div class="loader-content">
+            <div class="loader-radar">
+                <div class="loader-radar-grid"></div>
+            </div>
+            <div class="loader-text">
+                <span>System Initializing</span><span class="loader-dots"></span>
+            </div>
+        </div>
+    </div>
     <header
         class="fixed top-0 left-0 right-0 z-[100] w-full border-b border-white/5 bg-black/95 backdrop-blur-md px-6 lg:px-20 py-4">
         <div class="max-w-7xl mx-auto flex items-center justify-between">

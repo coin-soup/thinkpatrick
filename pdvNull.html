@@ -75,10 +75,101 @@
         .play-animate {
             animation: play-ping 0.4s ease-out forwards;
         }
+        /* Loading Screen Styles */
+        #loading-screen {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background-color: #0A0A0A;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.8s;
+        }
+        #loading-screen.fade-out {
+            opacity: 0;
+            visibility: hidden;
+        }
+        .loader-content {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+        }
+        .loader-radar {
+            width: 120px;
+            height: 120px;
+            border: 1px solid rgba(57, 255, 20, 0.2);
+            border-radius: 50%;
+            position: relative;
+            overflow: hidden;
+        }
+        .loader-radar::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 100%;
+            background: conic-gradient(from 0deg, rgba(57, 255, 20, 0.4) 0%, transparent 25%);
+            transform-origin: 0 0;
+            animation: radar-sweep 2s linear infinite;
+        }
+        .loader-radar-grid {
+            position: absolute;
+            inset: 0;
+            background-image: 
+                radial-gradient(rgba(57, 255, 20, 0.1) 1px, transparent 1px),
+                linear-gradient(rgba(57, 255, 20, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(57, 255, 20, 0.05) 1px, transparent 1px);
+            background-size: 20px 20px, 20px 20px, 20px 20px;
+            background-position: center;
+            border-radius: 50%;
+        }
+        @keyframes radar-sweep {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .loader-text {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 10px;
+            font-weight: 900;
+            letter-spacing: 0.5em;
+            text-transform: uppercase;
+            color: #39FF14;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .loader-dots::after {
+            content: '...';
+            animation: dots 1.5s steps(4, end) infinite;
+            display: inline-block;
+            width: 1.5em;
+        }
+        @keyframes dots {
+            0%, 20% { content: ''; }
+            40% { content: '.'; }
+            60% { content: '..'; }
+            80%, 100% { content: '...'; }
+        }
     </style>
 </head>
 
 <body class="bg-background-dark text-slate-300 min-h-screen">
+    <!-- Loading Screen -->
+    <div id="loading-screen">
+        <div class="loader-content">
+            <div class="loader-radar">
+                <div class="loader-radar-grid"></div>
+            </div>
+            <div class="loader-text">
+                <span>System Initializing</span><span class="loader-dots"></span>
+            </div>
+        </div>
+    </div>
     <header
         class="fixed top-0 left-0 right-0 z-[100] w-full border-b border-white/5 bg-black/95 backdrop-blur-md px-6 lg:px-20 py-4">
         <div class="max-w-7xl mx-auto flex items-center justify-between">
@@ -138,7 +229,7 @@
                     class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none flex flex-col pt-12">
                     <div class="px-3 pb-2 flex flex-col gap-1 pointer-events-auto">
                         <!-- Progress Bar (YouTube Style) -->
-                        <div class="relative w-full h-10 mb-[-16px] flex items-center cursor-pointer group/progress"
+                        <div class="relative w-full h-12 mb-[-16px] flex items-center cursor-pointer group/progress"
                             id="progress-bar-container">
                             <div class="absolute inset-x-0 h-[3px] bg-white/20 rounded-full overflow-hidden">
                                 <div id="progress-bar" class="h-full w-0 bg-primary shadow-[0_0_10px_#39FF14]"></div>
@@ -497,8 +588,9 @@
             const ICONS = {
                 play: '<svg class="w-full h-full" viewBox="0 -960 960 960" fill="currentColor"><path d="M320-200v-560l440 280-440 280Z"/></svg>',
                 pause: '<svg class="w-full h-full" viewBox="0 -960 960 960" fill="currentColor"><path d="M560-200v-560h160v560H560Zm-320 0v-560h160v560H240Z"/></svg>',
-                volume_up: '<svg class="w-full h-full" viewBox="0 -960 960 960" fill="currentColor"><path d="M560-131v-82q90-26 145-100t55-167q0-93-55-167T560-747v-82q124 31 202 125.5T840-480q0 127-78 221.5T560-131ZM120-360v-240h160l200-200v640L280-360H120Zm440 40v-320q47 22 73.5 66t26.5 94q0 50-26.5 94T560-320Z"/></svg>',
-                volume_off: '<svg class="w-full h-full" viewBox="0 -960 960 960" fill="currentColor"><path d="M792-56 671-177q-25 16-53 27.5T560-131v-82q21-5 41-14t38-22L560-328v-419l-92-93 20-20 352 352-20 20-55-55q19 36 29 76t10 82q0 93-55 167T671-177q23-11 44-26t39-34l120 121-82 82ZM480-280 280-480H120v-240h160l200-200v640Zm-40-164L324-560H200v80h124l116 116v120L440-444ZM840-480q0 127-78 221.5T560-131v-82q90-26 145-100t55-167q0-25-5-49t-15-46l66-66q20 40 30 84t10 93ZM630-747 560-817v-82q124 31 202 125.5T840-480q0 21-2 42t-7 41l-75-75q14-35 24-74t10-76q0-92-55-166.5T630-747Zm-150 15 11 11-131 131H200v80h124L480-360v-372Z"/></svg>'
+                volume_up: '<svg class="w-full h-full" viewBox="0 -960 960 960" fill="currentColor"><path d="M120-360v-240h160l200-200v640L280-360H120Zm440 40v-320q47 22 73.5 66t26.5 94q0 50-26.5 94T560-320ZM560-131v-82q90-26 145-100t55-167q0-93-55-167T560-747v-82q124 31 202 125.5T840-480q0 127-78 221.5T560-131Z"/></svg>',
+                volume_down: '<svg class="w-full h-full" viewBox="0 -960 960 960" fill="currentColor"><path d="M120-360v-240h160l200-200v640L280-360H120Zm440 40v-320q47 22 73.5 66t26.5 94q0 50-26.5 94T560-320Z"/></svg>',
+                volume_off: '<svg class="w-full h-full" viewBox="0 -960 960 960" fill="currentColor"><path d="M120-360v-240h160l200-200v640L280-360H120Zm608-52-114-114-114 114-56-56 114-114-114-114 56-56 114 114 114-114 56 56-114 114 114 114-56 56Z"/></svg>'
             };
 
             if (playPauseBtn) playPauseBtn.addEventListener('click', togglePlay);
@@ -518,8 +610,16 @@
 
             video.volume = 0.5; video.muted = PROJECT_DEFAULTS.startsMuted;
             const updateVolumeIcon = () => {
-                if (video.muted || video.volume === 0) { if (volumeIcon) volumeIcon.innerHTML = ICONS.volume_off; if (volumeSlider) volumeSlider.value = 0; }
-                else { if (volumeIcon) volumeIcon.innerHTML = ICONS.volume_up; if (volumeSlider) volumeSlider.value = video.volume; }
+                if (video.muted || video.volume === 0) {
+                    if (volumeIcon) volumeIcon.innerHTML = ICONS.volume_off;
+                    if (volumeSlider) volumeSlider.value = 0;
+                } else if (video.volume < 0.6) {
+                    if (volumeIcon) volumeIcon.innerHTML = ICONS.volume_down;
+                    if (volumeSlider) volumeSlider.value = video.volume;
+                } else {
+                    if (volumeIcon) volumeIcon.innerHTML = ICONS.volume_up;
+                    if (volumeSlider) volumeSlider.value = video.volume;
+                }
             };
             updateVolumeIcon();
 
@@ -535,8 +635,11 @@
             };
             if (progressBarContainer) {
                 progressBarContainer.addEventListener('mousedown', (e) => { isDragging = true; videoContainer.classList.add('dragging'); setPos(e); });
+                progressBarContainer.addEventListener('touchstart', (e) => { isDragging = true; videoContainer.classList.add('dragging'); setPos(e); }, { passive: false });
                 window.addEventListener('mousemove', (e) => { if (isDragging) setPos(e); });
+                window.addEventListener('touchmove', (e) => { if (isDragging) { e.preventDefault(); setPos(e); } }, { passive: false });
                 window.addEventListener('mouseup', () => { if (isDragging) { isDragging = false; videoContainer.classList.remove('dragging'); } });
+                window.addEventListener('touchend', () => { if (isDragging) { isDragging = false; videoContainer.classList.remove('dragging'); } });
             }
             if (fullscreenBtn) fullscreenBtn.addEventListener('click', () => { if (video.requestFullscreen) video.requestFullscreen(); else if (video.webkitRequestFullscreen) video.webkitRequestFullscreen(); });
         };
@@ -568,6 +671,17 @@
                 node.classList.remove('hover:bg-white/[0.03]');
                 const p = node.querySelectorAll('p');
                 if (p.length >= 2) { p[0].classList.replace('text-white/40', 'text-primary'); p[1].classList.replace('text-white', 'text-primary'); }
+            }
+        });
+
+        // Loading Screen Management
+        window.addEventListener('load', () => {
+            const loadingScreen = document.getElementById('loading-screen');
+            if (loadingScreen) {
+                setTimeout(() => {
+                    loadingScreen.classList.add('fade-out');
+                    setTimeout(() => loadingScreen.remove(), 800);
+                }, 1000);
             }
         });
     </script>
