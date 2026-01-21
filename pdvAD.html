@@ -542,18 +542,9 @@
             }
         };
 
-        // Fallback Logic for China Users
+        // Bilibili-First Logic for China Users
         if (isChinaUser && BILI_IDS.bvid) {
-            const video = document.getElementById('project-video');
-            const failoverTimer = setTimeout(switchToBili, 5000);
-
-            if (video) {
-                video.addEventListener('loadedmetadata', () => {
-                    console.log("Local video loaded, cancelling failover.");
-                    clearTimeout(failoverTimer);
-                });
-                video.addEventListener('error', switchToBili);
-            }
+            switchToBili();
         }
 
         // Initialize Local Video Controls
