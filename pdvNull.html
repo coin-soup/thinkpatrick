@@ -8,8 +8,7 @@
     <title>Project Detail: 2.5D Shooter</title>
     <script src="js/tailwind.min.js"></script>
 
-    <link href="fonts/space-grotesk.css"
-        rel="stylesheet" />
+    <link href="fonts/space-grotesk.css" rel="stylesheet" />
     <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
@@ -129,8 +128,8 @@
                 <!-- Central Play Button (YouTube Style) -->
                 <button id="center-play-btn"
                     class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 text-white opacity-90 hover:opacity-100 transition-opacity drop-shadow-lg scale-100 active:scale-90 duration-200">
-                    <span id="center-play-icon" class="flex items-center justify-center">
-                        <svg class="w-16 h-16 md:w-24 md:h-24" viewBox="0 -960 960 960" fill="currentColor">
+                    <span id="center-play-icon" class="flex items-center justify-center w-12 h-12 md:w-16 md:h-16">
+                        <svg class="w-full h-full" viewBox="0 -960 960 960" fill="currentColor">
                             <path d="M320-200v-560l440 280-440 280Z" />
                         </svg>
                     </span>
@@ -403,7 +402,12 @@
             return `https://player.bilibili.com/player.html?${params.toString()}`;
         };
 
-        if (isChinaUser && BILI_IDS.bvid) {
+        let isBiliActive = false;
+        const switchToBili = () => {
+            if (isBiliActive || !BILI_IDS.bvid) return;
+            isBiliActive = true;
+            console.log("Local video failed or timed out. Switching to Bilibili...");
+
             const videoContainer = document.getElementById('video-container');
             const localVideo = document.getElementById('project-video');
             const videoControls = document.getElementById('video-controls');
@@ -436,8 +440,26 @@
                 mask.addEventListener('click', () => triggerBiliPlay());
                 videoContainer.appendChild(mask);
             }
-        } else {
+        };
+
+        // Fallback Logic for China Users
+        if (isChinaUser && BILI_IDS.bvid) {
             const video = document.getElementById('project-video');
+            const failoverTimer = setTimeout(switchToBili, 5000);
+
+            if (video) {
+                video.addEventListener('loadedmetadata', () => {
+                    console.log("Local video loaded, cancelling failover.");
+                    clearTimeout(failoverTimer);
+                });
+                video.addEventListener('error', switchToBili);
+            }
+        }
+
+        // Initialize Local Video Controls
+        const initLocalControls = () => {
+            const video = document.getElementById('project-video');
+            if (!video) return;
             const playPauseBtn = document.getElementById('play-pause-btn');
             const playIcon = document.getElementById('play-icon');
             const currentTimeEl = document.getElementById('current-time');
@@ -517,14 +539,16 @@
                 window.addEventListener('mouseup', () => { if (isDragging) { isDragging = false; videoContainer.classList.remove('dragging'); } });
             }
             if (fullscreenBtn) fullscreenBtn.addEventListener('click', () => { if (video.requestFullscreen) video.requestFullscreen(); else if (video.webkitRequestFullscreen) video.webkitRequestFullscreen(); });
-        }
+        };
+
+        initLocalControls();
 
         // Global Analysis Node Click Handler
         document.addEventListener('click', (e) => {
             const node = e.target.closest('.analysis-node');
             if (node) {
                 const time = parseFloat(node.dataset.time);
-                if (isChinaUser && BILI_IDS.bvid) {
+                if (isBiliActive && BILI_IDS.bvid) {
                     triggerBiliPlay(time);
                 } else {
                     const video = document.getElementById('project-video');
