@@ -510,7 +510,7 @@
 
             const iframe = document.createElement('iframe');
             iframe.id = 'bili-player';
-            iframe.src = buildBiliUrl(0, 0, 0); // Always start from zero for Bilibili to avoid mobile load issues
+            iframe.src = buildBiliUrl(START_TIME, 0, 0);
             iframe.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;border:0;z-index:1;';
             iframe.allow = 'fullscreen; picture-in-picture; encrypted-media; gyroscope';
             iframe.allowFullscreen = true;
