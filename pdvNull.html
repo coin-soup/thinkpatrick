@@ -425,8 +425,9 @@
         const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
         const chinaTimeZones = ['Asia/Shanghai', 'Asia/Chongqing', 'Asia/Harbin', 'Asia/Urumqi', 'Asia/Kashgar', 'Asia/Hong_Kong', 'Asia/Macau', 'Asia/Taipei', 'PRC'];
         const isGMT8 = (new Date().getTimezoneOffset() === -480);
+        const isZh = navigator.language.startsWith('zh') || (navigator.languages && navigator.languages.some(l => l.startsWith('zh')));
         const urlParams = new URLSearchParams(window.location.search);
-        const isChinaUser = urlParams.get('forceBili') === 'true' || (!(urlParams.get('forceLocal') === 'true') && (chinaTimeZones.includes(userTimeZone) || isGMT8));
+        const isChinaUser = urlParams.get('forceBili') === 'true' || (!(urlParams.get('forceLocal') === 'true') && (chinaTimeZones.includes(userTimeZone) || isGMT8 || isZh));
 
         const loadingOverlay = document.getElementById('loading-overlay');
         const hideLoading = () => { if (loadingOverlay) loadingOverlay.style.display = 'none'; };
@@ -595,9 +596,17 @@
             });
 
             let seeked = false;
-            const skip = () => { if (!seeked && (video.readyState >= 1 || video.duration > 0)) { video.currentTime = START_TIME; seeked = true; } };
+            const skip = () => {
+                if (!seeked && (video.readyState >= 1 || video.duration > 0)) {
+                    const wasPaused = video.paused;
+                    video.currentTime = START_TIME;
+                    seeked = true;
+                    if (!wasPaused) video.play().catch(() => { });
+                }
+            };
             ['loadedmetadata', 'canplay', 'play'].forEach(ev => video.addEventListener(ev, skip));
             const skipInt = setInterval(() => { if (seeked) clearInterval(skipInt); else skip(); }, 200);
+            setTimeout(() => { if (!seeked) skip(); }, 2000);
 
             video.volume = 0.5; video.muted = PROJECT_DEFAULTS.startsMuted;
             const updateVolumeIcon = () => {
