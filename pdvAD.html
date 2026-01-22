@@ -403,7 +403,7 @@
         const BILI_IFRAME_LINK = `<iframe src="//player.bilibili.com/player.html?isOutside=true&aid=115916721363072&bvid=BV11Ak4BWEBc&cid=35471819536&p=1" scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true"></iframe>`;
 
         const PROJECT_DEFAULTS = {
-            startTime: 0.1,
+            startTime: 0,
             startsMuted: true
         };
 
@@ -496,10 +496,11 @@
         const buildBiliUrl = (time = START_TIME, autoplay = 0, muted = PROJECT_DEFAULTS.startsMuted ? 1 : 0) => {
             const params = new URLSearchParams({
                 bvid: BILI_IDS.bvid, aid: BILI_IDS.aid, cid: BILI_IDS.cid,
-                t: String(time), danmaku: '0', high_quality: '1',
+                danmaku: '0', high_quality: '1',
                 autoplay: String(autoplay), muted: String(muted),
                 as_wide: '1', p: '1', isOutside: 'true'
             });
+            if (time > 0) params.append('t', String(time));
             return `https://player.bilibili.com/player.html?${params.toString()}`;
         };
 
