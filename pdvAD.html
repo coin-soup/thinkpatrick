@@ -507,21 +507,21 @@
         const switchToBili = () => {
             if (isBiliActive || !BILI_IDS.bvid) return;
             isBiliActive = true;
-            console.log("Local video failed or timed out. Switching to Bilibili...");
+            console.log("Switching to Bilibili player...");
 
             const videoContainer = document.getElementById('video-container');
             const localVideo = document.getElementById('project-video');
             const videoControls = document.getElementById('video-controls');
             const centerPlayBtn = document.getElementById('center-play-btn');
 
-            if (localVideo) localVideo.remove();
-            if (videoControls) videoControls.remove();
-            if (centerPlayBtn) centerPlayBtn.remove();
+            if (localVideo) { localVideo.pause(); localVideo.remove(); }
+            if (videoControls) { videoControls.style.display = 'none'; videoControls.remove(); }
+            if (centerPlayBtn) { centerPlayBtn.style.display = 'none'; centerPlayBtn.remove(); }
 
             const iframe = document.createElement('iframe');
             iframe.id = 'bili-player';
-            iframe.src = buildBiliUrl(START_TIME, 0, 0);
-            iframe.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;border:0;';
+            iframe.src = buildBiliUrl(0, 0, 0); // Always start from zero for Bilibili to avoid mobile load issues
+            iframe.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;border:0;z-index:1;';
             iframe.allow = 'fullscreen; picture-in-picture; encrypted-media; gyroscope';
             iframe.allowFullscreen = true;
             iframe.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
@@ -607,16 +607,20 @@
 
             let seeked = false;
             const skip = () => {
-                if (!seeked && (video.readyState >= 1 || video.duration > 0)) {
-                    const wasPaused = video.paused;
-                    video.currentTime = 0.1; // Small offset to avoid start-of-file glitches
+                if (seeked) return;
+                if (video.readyState >= 1 || video.duration > 0) {
                     seeked = true;
-                    if (!wasPaused) video.play().catch(() => { });
+                    const wasPlaying = !video.paused;
+                    video.currentTime = 0.1;
+                    if (wasPlaying) {
+                        setTimeout(() => { video.play().catch(() => { }); }, 50);
+                    }
                 }
             };
-            ['loadedmetadata', 'canplay', 'play'].forEach(ev => video.addEventListener(ev, skip));
-            const skipInt = setInterval(() => { if (seeked) clearInterval(skipInt); else skip(); }, 200);
-            setTimeout(() => { if (!seeked) skip(); }, 2000); // Absolute fallback
+            video.addEventListener('loadedmetadata', skip);
+            video.addEventListener('play', skip);
+            const skipInt = setInterval(() => { if (seeked) clearInterval(skipInt); else skip(); }, 500);
+            setTimeout(() => { if (!seeked) skip(); }, 3000);
 
             video.volume = 0.5; video.muted = PROJECT_DEFAULTS.startsMuted;
             const updateVolumeIcon = () => {
@@ -654,7 +658,9 @@
             if (fullscreenBtn) fullscreenBtn.addEventListener('click', () => { if (video.requestFullscreen) video.requestFullscreen(); else if (video.webkitRequestFullscreen) video.webkitRequestFullscreen(); });
         };
 
-        initLocalControls();
+        if (!isBiliActive) {
+            initLocalControls();
+        }
 
         // Global Analysis Node Click Handler
         document.addEventListener('click', (e) => {
